@@ -15,6 +15,8 @@ type RedisService interface {
 	Delete(key string) error
 	ListKeys() map[string]string
 	ListKeysNearExpired() []string
+	Increase(key string) error
+	Decrease(key string) error
 }
 
 type redisServiceImpl struct {
@@ -135,4 +137,14 @@ func (r *redisServiceImpl) ListKeysNearExpired() []string {
 		}
 	}
 	return keys
+}
+
+func (r *redisServiceImpl) Increase(key string) error {
+	_, err := r.redisConn.Incr(key).Result()
+	return err
+}
+
+func (r *redisServiceImpl) Decrease(key string) error {
+	_, err := r.redisConn.Decr(key).Result()
+	return err
 }
