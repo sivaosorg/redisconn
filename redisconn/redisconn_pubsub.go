@@ -13,11 +13,6 @@ type RedisPubSubService interface {
 	Close() error
 }
 
-type redisPubSubServiceImpl struct {
-	redisConn       *redis.Client            `json:"-"`
-	subscriptionMap map[string]*redis.PubSub `json:"-"`
-}
-
 func NewRedisPubSub(redisConn *redis.Client) RedisPubSubService {
 	s := &RedisPubSubClient{
 		redisConn:       redisConn,
