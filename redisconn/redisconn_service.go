@@ -2,6 +2,7 @@ package redisconn
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -17,23 +18,42 @@ type RedisService interface {
 	ListKeysNearExpired() []string
 	Increase(key string) error
 	Decrease(key string) error
+	Lock(key string, value interface{}, expiration time.Duration) error
+	Unlock(key string, value interface{}) error
 }
 
 type redisServiceImpl struct {
 	redisConn *redis.Client
+	mutex     *RedisMutex
+}
+
+func NewRedisMutex() *RedisMutex {
+	return &RedisMutex{make(map[string]*sync.Mutex)}
 }
 
 func NewRedisService(redisConn *redis.Client) RedisService {
 	s := &redisServiceImpl{
 		redisConn: redisConn,
+		mutex:     NewRedisMutex(),
 	}
 	return s
+}
+
+func (r *RedisMutex) getMutex(key string) *sync.Mutex {
+	mutex, ok := r.mutexes[key]
+	if !ok {
+		mutex = &sync.Mutex{}
+		r.mutexes[key] = mutex
+	}
+	return mutex
 }
 
 func (r *redisServiceImpl) Get(key string) (interface{}, error) {
 	if utils.IsEmpty(key) {
 		return nil, fmt.Errorf("invalid key")
 	}
+	r.mutex.getMutex(key).Lock()
+	defer r.mutex.getMutex(key).Unlock()
 	// Get the type of the key
 	keyType, err := r.redisConn.Type(key).Result()
 	if err == redis.Nil {
@@ -69,6 +89,8 @@ func (r *redisServiceImpl) Set(key string, value interface{}, expiration time.Du
 	if err != nil {
 		return err
 	}
+	r.mutex.getMutex(key).Lock()
+	defer r.mutex.getMutex(key).Unlock()
 	return r.redisConn.Set(key, json, expiration).Err()
 }
 
@@ -76,10 +98,14 @@ func (r *redisServiceImpl) Delete(key string) error {
 	if utils.IsEmpty(key) {
 		return fmt.Errorf("invalid key")
 	}
+	r.mutex.getMutex(key).Lock()
+	defer r.mutex.getMutex(key).Unlock()
 	return r.redisConn.Del(key).Err()
 }
 
 func (r *redisServiceImpl) ListKeys() map[string]string {
+	r.mutex.getMutex("*").Lock()
+	defer r.mutex.getMutex("*").Unlock()
 	keys := make(map[string]string)
 	var cursor uint64
 	for {
@@ -106,6 +132,8 @@ func (r *redisServiceImpl) ListKeys() map[string]string {
 }
 
 func (r *redisServiceImpl) ListKeysNearExpired() []string {
+	r.mutex.getMutex("*").Lock()
+	defer r.mutex.getMutex("*").Unlock()
 	keys := []string{}
 	var cursor uint64
 	for {
@@ -140,11 +168,42 @@ func (r *redisServiceImpl) ListKeysNearExpired() []string {
 }
 
 func (r *redisServiceImpl) Increase(key string) error {
+	r.mutex.getMutex(key).Lock()
+	defer r.mutex.getMutex(key).Unlock()
 	_, err := r.redisConn.Incr(key).Result()
 	return err
 }
 
 func (r *redisServiceImpl) Decrease(key string) error {
+	r.mutex.getMutex(key).Lock()
+	defer r.mutex.getMutex(key).Unlock()
 	_, err := r.redisConn.Decr(key).Result()
 	return err
+}
+
+func (r *redisServiceImpl) Lock(key string, value interface{}, expiration time.Duration) error {
+	r.mutex.getMutex(key).Lock()
+	defer r.mutex.getMutex(key).Unlock()
+	v := utils.ToJson(value)
+	return r.redisConn.SetNX(key, v, expiration).Err()
+}
+
+func (r *redisServiceImpl) Unlock(key string, value interface{}) error {
+	r.mutex.getMutex(key).Lock()
+	defer r.mutex.getMutex(key).Unlock()
+
+	// Get the current value of the key
+	currentValue, err := r.redisConn.Get(key).Result()
+	if err == redis.Nil {
+		return fmt.Errorf("key %s not found", key)
+	}
+	if err != nil {
+		return err
+	}
+	// Check if the key is locked by the given value
+	if currentValue != utils.ToJson(value) {
+		return fmt.Errorf("key %s is not locked by the given value", key)
+	}
+	// Delete the key from redis
+	return r.redisConn.Del(key).Err()
 }
