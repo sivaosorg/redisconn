@@ -54,6 +54,8 @@ github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/sivaosorg/govm v1.0.3 h1:yfdhD0Pl8t1ey/VT/085BwK1Cy5gFv1Qztynx0zPGzA=
 github.com/sivaosorg/govm v1.0.3/go.mod h1:ymisVMkS/ouMgb7Wjaa7xVkqz7LLrh5SZOr0Q3V2Ogc=
+github.com/sivaosorg/govm v1.0.4 h1:Fwpnh9J7pw51erL4V531VqVCWAUKZh25T/hla5cAS3c=
+github.com/sivaosorg/govm v1.0.4/go.mod h1:ymisVMkS/ouMgb7Wjaa7xVkqz7LLrh5SZOr0Q3V2Ogc=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=

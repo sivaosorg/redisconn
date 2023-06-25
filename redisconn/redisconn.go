@@ -2,6 +2,7 @@ package redisconn
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/go-redis/redis"
 	"github.com/sivaosorg/govm/dbx"
@@ -41,6 +42,7 @@ func NewClient(config redisx.RedisConfig) (*redis.Client, dbx.Dbx) {
 		_logger.Info(fmt.Sprintf("Connected successfully to redis cache:: %s/%s", config.UrlConn, config.Database))
 	}
 	instance = client
-	s.SetConnected(true).SetMessage("Connection established")
+	pid := os.Getpid()
+	s.SetConnected(true).SetMessage("Connection established").SetPid(pid).SetNewInstance(true)
 	return instance, *s
 }
