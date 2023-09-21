@@ -2,7 +2,7 @@ module github.com/sivaosorg/redisconn
 
 go 1.20
 
-require github.com/sivaosorg/govm v1.0.4
+require github.com/sivaosorg/govm v1.2.0
 
 require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
@@ -13,7 +13,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.27.8 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
