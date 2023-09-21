@@ -20,6 +20,7 @@ type RedisService interface {
 	Decrease(key string) error
 	Lock(key string, value interface{}, expiration time.Duration) error
 	Unlock(key string, value interface{}) error
+	Handler() *redis.Client
 }
 
 type redisServiceImpl struct {
@@ -206,4 +207,8 @@ func (r *redisServiceImpl) Unlock(key string, value interface{}) error {
 	}
 	// Delete the key from redis
 	return r.redisConn.Del(key).Err()
+}
+
+func (r *redisServiceImpl) Handler() *redis.Client {
+	return r.redisConn
 }
