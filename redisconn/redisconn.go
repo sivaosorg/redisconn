@@ -28,9 +28,10 @@ func NewClient(config redisx.RedisConfig) (*redis.Client, dbx.Dbx) {
 		return instance, *s
 	}
 	client := redis.NewClient(&redis.Options{
-		Addr:     config.UrlConn,
-		Password: config.Password,
-		DB:       0,
+		Addr:        config.UrlConn,
+		Password:    config.Password,
+		DialTimeout: config.Timeout,
+		DB:          0,
 	})
 	err := client.Ping().Err()
 	if err != nil {
