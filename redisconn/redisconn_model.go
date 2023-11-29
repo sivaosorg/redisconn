@@ -4,6 +4,8 @@ import (
 	"sync"
 
 	"github.com/go-redis/redis"
+	"github.com/sivaosorg/govm/dbx"
+	"github.com/sivaosorg/govm/redisx"
 )
 
 type RedisPubSubClient struct {
@@ -13,4 +15,10 @@ type RedisPubSubClient struct {
 
 type RedisMutex struct {
 	mutexes map[string]*sync.Mutex
+}
+
+type Redis struct {
+	conn   *redis.Client      `json:"-"`
+	Config redisx.RedisConfig `json:"config,omitempty"`
+	State  dbx.Dbx            `json:"state,omitempty"`
 }

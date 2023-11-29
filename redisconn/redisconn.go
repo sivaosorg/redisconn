@@ -8,23 +8,53 @@ import (
 	"github.com/sivaosorg/govm/dbx"
 	"github.com/sivaosorg/govm/logger"
 	"github.com/sivaosorg/govm/redisx"
+	"github.com/sivaosorg/govm/utils"
 )
 
 var (
-	instance *redis.Client
+	instance *Redis
 	_logger  = logger.NewLogger()
 )
 
-func NewClient(config redisx.RedisConfig) (*redis.Client, dbx.Dbx) {
+func NewRedis() *Redis {
+	return &Redis{}
+}
+
+func (r *Redis) SetConn(value *redis.Client) *Redis {
+	r.conn = value
+	return r
+}
+
+func (r *Redis) SetConfig(value redisx.RedisConfig) *Redis {
+	r.Config = value
+	return r
+}
+
+func (r *Redis) SetState(value dbx.Dbx) *Redis {
+	r.State = value
+	return r
+}
+
+func (r *Redis) Json() string {
+	return utils.ToJson(r)
+}
+
+func (r *Redis) GetConn() *redis.Client {
+	return r.conn
+}
+
+func NewClient(config redisx.RedisConfig) (*Redis, dbx.Dbx) {
 	s := dbx.NewDbx().SetDatabase(config.Database)
 	if !config.IsEnabled {
 		s.SetConnected(false).
 			SetMessage("Redis unavailable").
 			SetError(fmt.Errorf(s.Message))
-		return &redis.Client{}, *s
+		instance = NewRedis().SetState(*s)
+		return instance, *s
 	}
 	if instance != nil {
-		s.SetConnected(true)
+		s.SetConnected(true).SetNewInstance(false)
+		instance.SetState(*s)
 		return instance, *s
 	}
 	client := redis.NewClient(&redis.Options{
@@ -36,14 +66,14 @@ func NewClient(config redisx.RedisConfig) (*redis.Client, dbx.Dbx) {
 	err := client.Ping().Err()
 	if err != nil {
 		s.SetConnected(false).SetError(err).SetMessage(err.Error())
-		return &redis.Client{}, *s
+		instance = NewRedis().SetState(*s)
+		return instance, *s
 	}
 	if config.DebugMode {
 		_logger.Info(fmt.Sprintf("Redis client connection:: %s", config.Json()))
 		_logger.Info(fmt.Sprintf("Connected successfully to redis cache:: %s/%s", config.UrlConn, config.Database))
 	}
-	instance = client
-	pid := os.Getpid()
-	s.SetConnected(true).SetMessage("Connection established").SetPid(pid).SetNewInstance(true)
+	s.SetConnected(true).SetMessage("Connected successfully").SetPid(os.Getpid()).SetNewInstance(true)
+	instance = NewRedis().SetConn(client).SetState(*s)
 	return instance, *s
 }
