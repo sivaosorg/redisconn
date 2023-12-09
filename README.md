@@ -13,7 +13,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/sivaosorg/govm/logger"
 	"github.com/sivaosorg/govm/redisx"
-	"github.com/sivaosorg/redisconn/redisconn"
+	"github.com/sivaosorg/redisconn"
 )
 
 func main() {
@@ -75,7 +75,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/sivaosorg/govm/logger"
 	"github.com/sivaosorg/govm/redisx"
-	"github.com/sivaosorg/redisconn/redisconn"
+	"github.com/sivaosorg/redisconn"
 )
 
 func main() {

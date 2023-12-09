@@ -12,8 +12,7 @@ import (
 )
 
 var (
-	instance *Redis
-	_logger  = logger.NewLogger()
+	_logger = logger.NewLogger()
 )
 
 func NewRedis() *Redis {
@@ -44,16 +43,12 @@ func (r *Redis) GetConn() *redis.Client {
 }
 
 func NewClient(config redisx.RedisConfig) (*Redis, dbx.Dbx) {
+	instance := NewRedis()
 	s := dbx.NewDbx().SetDatabase(config.Database)
 	if !config.IsEnabled {
 		s.SetConnected(false).
 			SetMessage("Redis unavailable").
 			SetError(fmt.Errorf(s.Message))
-		instance = NewRedis().SetState(*s)
-		return instance, *s
-	}
-	if instance != nil {
-		s.SetConnected(true).SetNewInstance(false)
 		instance.SetState(*s)
 		return instance, *s
 	}
@@ -66,7 +61,7 @@ func NewClient(config redisx.RedisConfig) (*Redis, dbx.Dbx) {
 	err := client.Ping().Err()
 	if err != nil {
 		s.SetConnected(false).SetError(err).SetMessage(err.Error())
-		instance = NewRedis().SetState(*s)
+		instance.SetState(*s)
 		return instance, *s
 	}
 	if config.DebugMode {
@@ -74,6 +69,6 @@ func NewClient(config redisx.RedisConfig) (*Redis, dbx.Dbx) {
 		_logger.Info(fmt.Sprintf("Connected successfully to redis cache:: %s/%s", config.UrlConn, config.Database))
 	}
 	s.SetConnected(true).SetMessage("Connected successfully").SetPid(os.Getpid()).SetNewInstance(true)
-	instance = NewRedis().SetConn(client).SetState(*s)
+	instance.SetConn(client).SetState(*s)
 	return instance, *s
 }
