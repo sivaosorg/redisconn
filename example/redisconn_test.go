@@ -130,3 +130,23 @@ func TestConsumeCallback(t *testing.T) {
 		return
 	}
 }
+
+func TestKeySpaceNotification(t *testing.T) {
+	r, _ := createConn()
+	svc := redisconn.NewRedisService(r.GetConn())
+	err := svc.Set("_redis_keyspace_key_", 123, time.Second*5)
+	if err != nil {
+		logger.Errorf("Setting key on redis got an error", err)
+		return
+	}
+	svc.SyncKeySpace().AddCallback(func(msg *redis.Message, err error) {
+		if err != nil {
+			logger.Errorf("Redis KeySpace Notification got an error", err)
+			return
+		}
+		logger.Infof(msg.String())
+	})
+	svc.SyncKeySpace().Register()
+	time.Sleep(15 * time.Second)    // waiting to done
+	svc.SyncKeySpace().Unregister() // stop watching
+}

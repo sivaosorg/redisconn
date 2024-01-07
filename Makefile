@@ -3,10 +3,10 @@
 # ==============================================================================
 # Start Rest
 run:
-	go run main.go
+	go run main/main.go
 
 build:
-	go build main.go
+	go build main/main.go
 
 # ==============================================================================
 # Modules support

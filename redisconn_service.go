@@ -24,12 +24,15 @@ type RedisService interface {
 
 	// sync pubsub hook
 	SyncPubSub() RedisPubSubService
+	// sync keyspace notification hook
+	SyncKeySpace() RedisKeySpaceService
 }
 
 type redisServiceImpl struct {
 	redisConn *redis.Client
 	mutex     *RedisMutex
 	pubsub    RedisPubSubService
+	keyspace  RedisKeySpaceService
 }
 
 func newRedisMutex() *RedisMutex {
@@ -41,6 +44,7 @@ func NewRedisService(redisConn *redis.Client) RedisService {
 		redisConn: redisConn,
 		mutex:     newRedisMutex(),
 		pubsub:    NewRedisPubSub(redisConn),
+		keyspace:  NewRedisKeySpaceService(redisConn),
 	}
 	return s
 }
@@ -220,4 +224,8 @@ func (r *redisServiceImpl) Handler() *redis.Client {
 
 func (r *redisServiceImpl) SyncPubSub() RedisPubSubService {
 	return r.pubsub
+}
+
+func (r *redisServiceImpl) SyncKeySpace() RedisKeySpaceService {
+	return r.keyspace
 }
