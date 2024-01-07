@@ -21,21 +21,26 @@ type RedisService interface {
 	Lock(key string, value interface{}, expiration time.Duration) error
 	Unlock(key string, value interface{}) error
 	Handler() *redis.Client
+
+	// sync pubsub hook
+	SyncPubSub() RedisPubSubService
 }
 
 type redisServiceImpl struct {
 	redisConn *redis.Client
 	mutex     *RedisMutex
+	pubsub    RedisPubSubService
 }
 
-func NewRedisMutex() *RedisMutex {
+func newRedisMutex() *RedisMutex {
 	return &RedisMutex{make(map[string]*sync.Mutex)}
 }
 
 func NewRedisService(redisConn *redis.Client) RedisService {
 	s := &redisServiceImpl{
 		redisConn: redisConn,
-		mutex:     NewRedisMutex(),
+		mutex:     newRedisMutex(),
+		pubsub:    NewRedisPubSub(redisConn),
 	}
 	return s
 }
@@ -211,4 +216,8 @@ func (r *redisServiceImpl) Unlock(key string, value interface{}) error {
 
 func (r *redisServiceImpl) Handler() *redis.Client {
 	return r.redisConn
+}
+
+func (r *redisServiceImpl) SyncPubSub() RedisPubSubService {
+	return r.pubsub
 }

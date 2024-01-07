@@ -9,8 +9,8 @@ import (
 )
 
 type RedisPubSubClient struct {
-	redisConn       *redis.Client            `json:"-"`
-	subscriptionMap map[string]*redis.PubSub `json:"-"`
+	redisConn       *redis.Client
+	subscriptionMap map[string]*redis.PubSub
 }
 
 type RedisMutex struct {

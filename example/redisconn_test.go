@@ -80,8 +80,8 @@ func TestPublish(t *testing.T) {
 
 func TestConsume(t *testing.T) {
 	r, _ := createConn()
-	svc := redisconn.NewRedisPubSub(r.GetConn())
-	subs, err := svc.Subscribe("channel_1")
+	svc := redisconn.NewRedisService(r.GetConn())
+	subs, err := svc.SyncPubSub().Subscribe("channel_1")
 	if err != nil {
 		logger.Errorf("Subscribing message on redis got an error", err)
 		return
@@ -102,12 +102,12 @@ func TestConsume(t *testing.T) {
 	}()
 
 	// Unsubscribe from multiple channels and close the connection
-	err = svc.Unsubscribe("channel_1")
+	err = svc.SyncPubSub().Unsubscribe("channel_1")
 	if err != nil {
 		logger.Errorf("Unsubscribing message on redis got an error", err)
 		return
 	}
-	err = svc.Close()
+	err = svc.SyncPubSub().Close()
 	if err != nil {
 		logger.Errorf("Closing message on redis got an error", err)
 		return
