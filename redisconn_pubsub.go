@@ -9,6 +9,7 @@ import (
 type RedisPubSubService interface {
 	Publish(channel string, message interface{}) error
 	Subscribe(channels ...string) ([]*redis.PubSub, error)
+	SubscribeWith(callback func(message *redis.Message, err error), close bool, channels ...string) error
 	Unsubscribe(channels ...string) error
 	Close() error
 }
@@ -33,6 +34,32 @@ func (c *RedisPubSubClient) Subscribe(channels ...string) ([]*redis.PubSub, erro
 		pubSubs = append(pubSubs, pubsub)
 	}
 	return pubSubs, nil
+}
+
+func (c *RedisPubSubClient) SubscribeWith(callback func(message *redis.Message, err error), close bool, channels ...string) error {
+	subs, err := c.Subscribe(channels...)
+	if err != nil {
+		return err
+	}
+	go func() {
+		for _, sub := range subs {
+			go func(ps *redis.PubSub) {
+				for {
+					msg, err := ps.ReceiveMessage()
+					callback(msg, err)
+				}
+			}(sub)
+		}
+	}()
+	if !close {
+		return nil
+	}
+	err = c.Unsubscribe(channels...)
+	if err != nil {
+		return err
+	}
+	err = c.Close()
+	return err
 }
 
 func (c *RedisPubSubClient) Unsubscribe(channels ...string) error {

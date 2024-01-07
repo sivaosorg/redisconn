@@ -1,139 +1,78 @@
-# RedisConn
+# redisconn
 
-## Example Redis Pub.Sub
+![GitHub contributors](https://img.shields.io/github/contributors/sivaosorg/gocell)
+![GitHub followers](https://img.shields.io/github/followers/sivaosorg)
+![GitHub User's stars](https://img.shields.io/github/stars/pnguyen215)
 
-```go
-package main
+A Golang Redis connector library with features for Redis Pub/Sub, key-value operations, and distributed locking.
 
-import (
-	"bufio"
-	"fmt"
-	"os"
+## Table of Contents
 
-	"github.com/go-redis/redis"
-	"github.com/sivaosorg/govm/logger"
-	"github.com/sivaosorg/govm/redisx"
-	"github.com/sivaosorg/redisconn"
-)
+- [redisconn](#redisconn)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Modules](#modules)
+    - [Running Tests](#running-tests)
+    - [Tidying up Modules](#tidying-up-modules)
+    - [Upgrading Dependencies](#upgrading-dependencies)
+    - [Cleaning Dependency Cache](#cleaning-dependency-cache)
 
-func main() {
-	client, s := redisconn.NewClient(*redisx.GetRedisConfigSample().SetPassword("Tm5@P@ssw0rd").SetDebugMode(false))
-	logger.Infof("state connection: %v", s)
-	if !s.IsConnected {
-		panic(s.Error)
-	}
-	scanner := bufio.NewScanner(os.Stdin)
-	ps := redisconn.NewRedisPubSub(client)
-	pubsubs, err := ps.Subscribe("chat")
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		for _, pubsub := range pubsubs {
-			go func(ps *redis.PubSub) {
-				for {
-					msg, err := ps.ReceiveMessage()
-					if err != nil {
-						panic(err)
-					}
-					logger.Infof("%s: %s", msg.Channel, msg.Payload)
-				}
-			}(pubsub)
-		}
-	}()
-	logger.Infof("Type your message and hit enter to send a chat message!")
-	for {
-		fmt.Print("> ")
-		if !scanner.Scan() {
-			break
-		}
-		if scanner.Text() == "exit" || scanner.Text() == "quit" {
-			break
-		}
-		// Publish the chat message to the "chat" channel
-		err := ps.Publish("chat", scanner.Text())
-		if err != nil {
-			panic(err)
-		}
-	}
-	// Unsubscribe from multiple channels and close the connection
-	err = ps.Unsubscribe("chat")
-	if err != nil {
-		panic(err)
-	}
-	err = ps.Close()
-	if err != nil {
-		panic(err)
-	}
-}
+## Introduction
+
+Welcome to the Redis Connector for Go repository! This library provides a set of tools for seamless interaction with Redis in your Go applications. It includes features for Redis Pub/Sub, key-value operations, and distributed locking.
+
+## Prerequisites
+
+Golang version v1.20
+
+## Installation
+
+- Latest version
+
+```bash
+go get -u github.com/sivaosorg/redisconn@latest
 ```
 
-```go
-package main
+- Use a specific version (tag)
 
-import (
-	"github.com/go-redis/redis"
-	"github.com/sivaosorg/govm/logger"
-	"github.com/sivaosorg/govm/redisx"
-	"github.com/sivaosorg/redisconn"
-)
+```bash
+go get github.com/sivaosorg/redisconn@v0.0.1
+```
 
-func main() {
-	client, s := redisconn.NewClient(*redisx.GetRedisConfigSample().SetPassword("Tm5@P@ssw0rd").SetDebugMode(false))
-	logger.Infof("state connection: %v", s)
-	if !s.IsConnected {
-		panic(s.Error)
-	}
-	ps := redisconn.NewRedisPubSub(client)
-	pubSubs, err := ps.Subscribe("channel_1", "channel_2", "channel_3")
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		for _, pubsub := range pubSubs {
-			go func(ps *redis.PubSub) {
-				for {
-					msg, err := ps.ReceiveMessage()
-					if err != nil {
-						panic(err)
-					}
-					logger.Infof("%s: %s", msg.Channel, msg.Payload)
-				}
-			}(pubsub)
-		}
-	}()
+## Modules
 
-	// Publish a message to the subscribed channels
-	err = ps.Publish("channel_1", "content1")
-	if err != nil {
-		panic(err)
-	}
+Explain how users can interact with the various modules.
 
-	err = ps.Publish("channel_2", "content2")
-	if err != nil {
-		panic(err)
-	}
+### Running Tests
 
-	err = ps.Publish("channel_3", "content3")
-	if err != nil {
-		panic(err)
-	}
+To run tests for all modules, use the following command:
 
-	err = ps.Publish("channel_1", "content4")
-	if err != nil {
-		panic(err)
-	}
+```bash
+make test
+```
 
-	// Unsubscribe from multiple channels and close the connection
-	err = ps.Unsubscribe("channel_1", "channel_2", "channel_3")
-	if err != nil {
-		panic(err)
-	}
+### Tidying up Modules
 
-	err = ps.Close()
-	if err != nil {
-		panic(err)
-	}
-}
+To tidy up the project's Go modules, use the following command:
 
+```bash
+make tidy
+```
+
+### Upgrading Dependencies
+
+To upgrade project dependencies, use the following command:
+
+```bash
+make deps-upgrade
+```
+
+### Cleaning Dependency Cache
+
+To clean the Go module cache, use the following command:
+
+```bash
+make deps-clean-cache
 ```
