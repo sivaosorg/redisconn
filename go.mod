@@ -2,7 +2,7 @@ module github.com/sivaosorg/redisconn
 
 go 1.20
 
-require github.com/sivaosorg/govm v1.2.8
+require github.com/sivaosorg/govm v1.2.9
 
 require (
 	github.com/fatih/color v1.16.0 // indirect
